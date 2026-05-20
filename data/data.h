@@ -3,9 +3,11 @@
 #include <windows.h>
 #include <errno.h>
 
+#define CAMINHO_MAXIMO 260
+
 void eliminarAspas(char* caminho)
 {
-    char novoCaminho[260];
+    char novoCaminho[CAMINHO_MAXIMO];
     char* ptrAspas;
     
     char aspas = '"';
@@ -28,7 +30,7 @@ void eliminarAspas(char* caminho)
 
 void duplicarContraBarras(char* caminho)
 {
-    char novoCaminho[260];
+    char novoCaminho[CAMINHO_MAXIMO];
 
     char *ptrBarras;
 
@@ -100,37 +102,39 @@ int adicionarParaBackup(char* caminho)
     return b;
 } 
 
-void verificarTipoCaminho(char* caminho)
+int verificarTipoCaminho(char* caminho)
 {
     DWORD atributos = GetFileAttributesA(caminho);
 
     if (atributos == INVALID_FILE_ATTRIBUTES)
     {
         printf("Caminho inválido ou não encontrado.\n");
-        return;
+        return -1;
     }
 
     if (atributos & FILE_ATTRIBUTE_DIRECTORY)
     {
         printf("O caminho é um diretório.\n");
+        return 1;
     }
     else
     {
         printf("O caminho é um arquivo.\n");
+        return 0;
     }
 }
 
 int verificar_caminho_ja_adicionado(char* caminho) // Retorna 0 se ainda não foi adicionado e 1 caso contrário
 {
     int ja_adicionado = 0; //Falso
-    char linha[260];
+    char linha[CAMINHO_MAXIMO];
     int contraBarIndex = 0;
 
     FILE* fptr;
 
     fptr = fopen("ListaParaBackup.txt", "r");
 
-    while (fgets(linha, 260, fptr))
+    while (fgets(linha, CAMINHO_MAXIMO, fptr))
     {
         // Eliminando quebra de linha
         contraBarIndex = strcspn(linha, "\n");
@@ -146,33 +150,62 @@ int verificar_caminho_ja_adicionado(char* caminho) // Retorna 0 se ainda não fo
     fclose(fptr); // Fechando arquivo
 }
 
+void conseguir_origem(char* caminho)
+{
+    char* ctrbPtr; // Ponteiro para a última contra barra
+    char caminhoBuff[CAMINHO_MAXIMO];
+
+    strcpy(caminhoBuff, caminho); // Faz uma cópia do caminho original para não altera-lo
+    ctrbPtr = strrchr(caminhoBuff, '\\');
+
+    *(ctrbPtr - 1) = '\0';
+
+    printf("%s", caminhoBuff);
+}
+
 int conseguir_caminhos(char* caminho) // Consegue todos os arquivos a partir de um dado caminho de diretório
 {
     WIN32_FIND_DATA findData;
     HANDLE hFind;
 
+    char caminhoBuffer[CAMINHO_MAXIMO];
+
     // Formatando caminho de ficheiro para conseguir todos os arquivos presentes
-    retirarEndlinde(caminho);
-    addCharCuringa(caminho);
+    int j = snprintf(caminhoBuffer, CAMINHO_MAXIMO, "%s\\\\*", caminho); // Adicionando "\\*"
+    retirarEndlinde(caminhoBuffer);
 
     // Consegue o primeiro arquivo no dado caminho
-    hFind = FindFirstFile(caminho, &findData);
+    hFind = FindFirstFile(caminhoBuffer, &findData);
 
-    // Verifica possível erro
-    if (hFind == INVALID_HANDLE_VALUE)
+    do
     {
-        printf("Erro ao inicar busca.\n");
-        return 1;
-    }
+        // Verifica possível erro
+        if (hFind == INVALID_HANDLE_VALUE)
+        {
+            printf("Erro ao inicar busca.\n");
+            return 1;
+        }
 
-    printf("\n%s\n", caminho);
-    // Primeiro arquivo
-    printf("Primeiro arquivo: %s\n\n", findData.cFileName);
+        // Primeiro arquivo
+        if (!strcmp(findData.cFileName, ".") || !strcmp(findData.cFileName, ".."))
+        {
+            continue;
+        }
 
-    while (FindNextFile(hFind, &findData) != 0)
-    {
-        printf("Arquivo encontrado: %s\n", findData.cFileName);
-    }
+        char caminho_completo[CAMINHO_MAXIMO];
+        snprintf(caminho_completo, CAMINHO_MAXIMO, "%s\\\\%s", caminho, findData.cFileName);
+        
+        if (findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) // Se for diretório
+        {
+            conseguir_caminhos(caminho_completo);
+        }
+        else
+        {
+            printf("\nArquivo: %s\n", caminho_completo);
+        }
+
+    }  while (FindNextFile(hFind, &findData));
+    
 
     FindClose(hFind);
     

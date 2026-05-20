@@ -1,8 +1,8 @@
 struct Arquivo
 {
-    char caminho[260];
+    char origem[260];
 
-    char tipo[20];
+    char caminho_relativo[260];
 };
 
 typedef struct Arquivo Arquivo;

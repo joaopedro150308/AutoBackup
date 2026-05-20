@@ -27,7 +27,8 @@ int main()
         // Formatando
         formatarCaminho(caminho);
         verificarTipoCaminho(caminho);
-        conseguir_caminhos(caminho);
+        conseguir_origem(caminho);
+        //conseguir_caminhos(caminho);
 
         if (verificar_caminho_ja_adicionado(caminho) == 1)
         {
