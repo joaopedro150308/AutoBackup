@@ -25,22 +25,31 @@ int main()
     while (strcmp(caminho, "0") != 0) // Enquanto for diferente de "0"
     {
         // Formatando
-        eliminarAspas(caminho);
+        formatarCaminho(caminho);
         verificarTipoCaminho(caminho);
-        //formatarCaminho(caminho);
+        conseguir_caminhos(caminho);
 
-        b = adicionarParaBackup(caminho); // Adicionando
-
-        // Verificando status da operação de adição
-        if (b == 0)
+        if (verificar_caminho_ja_adicionado(caminho) == 1)
         {
-            printf("Falha ao adicionar à lista de backup.\n");
+            printf("Caminho já adicionado.\n");
         }
-        else
+        else // Adicionar, caso não o tenha feito ainda
         {
-            printf("Adição bem sucedida.\n");
-        }
+            printf("Caminho ainda não adicionado.\n");
 
+            b = adicionarParaBackup(caminho); // Adicionando
+
+            // Verificando status da operação de adição
+            if (b == 0)
+            {
+                printf("Falha ao adicionar à lista de backup.\n");
+            }
+            else
+            {
+                printf("Adição bem sucedida.\n");
+            }
+        }
+        
         printf("PRESSIONE QUALQUER TECLA PARA CONTINUAR. . .\n");
         getch();
 
