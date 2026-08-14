@@ -18,6 +18,9 @@ int main()
     limpar();
 
     // Verificando a existência de uma pasta para conter os backups
+    fazer_titulo("VERIFICANDO PASTA BACKUPS", 5);
+    pular(); // Pulando a linha
+    pular();
 
     if(existe_pasta_backups() == 0){ // Existe
         printf("Pasta Backup já existe e foi encontrada.\n");
@@ -26,15 +29,51 @@ int main()
         // Verificar existência de um caminho
         if(!existe_caminho_backups()) {
             criar_caminho_pasta_backups();
-        } 
-        
+        }   
         criar_pasta_backups();
     }
 
-    // Lendo opção do procedimento a ser realizado
+    printf("Verificação concluída. Digite qualquer coisa para continuar.\n");
+    getchar();
 
+    // Lendo e verificando opção de procedimento a ser realizado
 
-    // Lendo caminho da origem
+    do {
+        limpar();
+
+        fazer_titulo("SELECIONE O PROCEDIMENTO", 5);
+        pular();
+        pular();
+
+        printf("[1] Iniciar Backup com as configurações atuais\n[0] Alterar configurações\n");
+        linha('-', 15);
+        pular();
+        printf("Sua escolha: ");
+
+        scanf("%d", &opcao); // Lendo a opção
+        while(getchar() != '\n');
+
+        switch(opcao){
+            case 1:
+                printf("Iniciando Backup...\n");
+                break;
+            
+            case 0:
+                printf("Alterando arquivos...\n");
+                break;
+    
+            default:
+                printf("Opção inválida. Digite qualquer coisa para tentar novamente.\n");
+                getchar();
+
+        }
+    } while(opcao != 1 && opcao != 0); 
+        // Iniciar Backup com as configurações já salvas
+        // Alterar arquivos
+
+    // Algorítimo de cópia
+        // Lendo caminho da origem
+    limpar();
     printf("Digite o caminho da pasta de origem ('0' para sair): ");
     fgets(origem, sizeof(origem), stdin);
     origem[strcspn(origem, "\n")] = '\0'; // Limpando '\n'
@@ -49,6 +88,7 @@ int main()
     formatarCaminho(destino);
 
     // Copiar diretório(s)
+    criar_pasta_mae(origem, destino, destino);
     if(copiar_diretorio(origem, destino) == 0){
         printf("Cópia bem sucedida.\n");
     }

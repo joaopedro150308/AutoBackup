@@ -24,4 +24,4 @@
     - Para fins de automação, ao iniciar o programa, a primeira tela deve perguntar se o usuário
     deseja realizar o processo com as configurações já salvas ou alterá-las
 
-    ### É necessário fazer todos os testes possíveis a respeito da criação da pasta
+    ### É necessário fazer todos os testes possíveis a respeito da criação da pasta - FEITO

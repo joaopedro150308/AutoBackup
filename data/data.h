@@ -9,30 +9,40 @@
 // ### FORMATAÇÃO ###
 void eliminarAspas(char* caminho)
 {
+    
     char novoCaminho[CAMINHO_MAXIMO];
     char* ptrAspas;
-    
+
     char aspas = '"';
     char* ptrA = &aspas;
+    
+    // Verificando a presença de aspas
+    if(strcspn(caminho, ptrA) == strlen(caminho)) { // Não há aspas
+        printf("Caminho não está entre aspas.\n");
 
-    ptrAspas = strtok(caminho, ptrA);
-    while (ptrAspas != NULL)
-    {
-        strcat(novoCaminho, ptrAspas); // Adiciona a parte sem aspas à string de saida
+    } else { // Existem aspas
+        ptrAspas = strtok(caminho, ptrA);
+        while (ptrAspas != NULL)
+        {
+            strcat(novoCaminho, ptrAspas); // Adiciona a parte sem aspas à string de saida
+            ptrAspas = strtok(NULL, ptrA); // Altera o token
+        }
 
-        ptrAspas = strtok(NULL, ptrA); // Altera o token
+        memset(caminho, '\0', sizeof(caminho)); // Limpa o  caminho antigo
+        strcpy(caminho, novoCaminho); // Atualiza o caminho com as alterações
+        
+        memset(novoCaminho, '\0', sizeof(novoCaminho)); // Reseta novoCaminho
+        
+        ptrAspas = NULL;
+        ptrA = NULL;
+
+        printf("Aspas removidas com sucesso.\n");
     }
-
-    memset(caminho, '\0', sizeof(caminho)); // Limpa o  caminho antigo
-    strcpy(caminho, novoCaminho); // Atualiza o caminho com as alterações
-
-    //novoCaminho[0] = '\0'; 
-    memset(novoCaminho, '\0', sizeof(novoCaminho)); // Reseta novoCaminho
 }
 
 void duplicarContraBarras(char* caminho)
 {
-    char novoCaminho[CAMINHO_MAXIMO];
+    char novoCaminho[CAMINHO_MAXIMO] = {'\0'};
 
     char *ptrBarras;
 
@@ -78,6 +88,7 @@ void formatarCaminho(char* caminho)
     /*Formata o caminho especificado (colocando contra-barras duplas, por exemplo)*/
     //eliminarAspas(caminho);
     duplicarContraBarras(caminho);
+    eliminarAspas(caminho);
 }   
 
 // ### MANIPULAÇÃO DE ARQUIVOS ###
@@ -182,8 +193,8 @@ int copiar_diretorio(char* origem, char*destino) // Consegue todos os arquivos a
     WIN32_FIND_DATA findData;
     HANDLE hFind;
 
-    char caminhoOrigem[CAMINHO_MAXIMO];
-    char caminhoDestino[CAMINHO_MAXIMO];
+    char caminhoOrigem[CAMINHO_MAXIMO] = {'\0'};
+    char caminhoDestino[CAMINHO_MAXIMO] = {'\0'};
 
     // Formatando caminho de ficheiro para conseguir todos os arquivos presentes
     int j = snprintf(caminhoOrigem, CAMINHO_MAXIMO, "%s\\\\*", origem); // Adicionando "\\*"
@@ -222,10 +233,30 @@ int copiar_diretorio(char* origem, char*destino) // Consegue todos os arquivos a
 
     }  while (FindNextFile(hFind, &findData));
     
-
     FindClose(hFind);
     
     return 0; // Pardão de retorno bem-sucedido
+}
+
+int criar_pasta_mae(char* origem, char* destino, char* retorno)
+{
+    /* Função que cria uma pasta mãe, pasta que guarda outras pastas e arquivos.
+       É a pasta de nível mais alto de um dado caminho. 
+       Ao criar a nova pasta, seu caminho é copiado para "retorno".
+       Se este for NULL, não haverá retorno.*/
+
+    char nome_pasta_mae[CAMINHO_MAXIMO] = {'\0'};
+    char* nomeptr;
+    char caminho_pasta_mae[CAMINHO_MAXIMO] = {'\0'};
+   
+    nomeptr = strrchr(origem, '\\') + 1; // Localiza o nome da pasta (Vem depois da última \)
+
+    strcpy(nome_pasta_mae, nomeptr);
+    sprintf(caminho_pasta_mae, "%s\\\\%s", destino, nome_pasta_mae);
+
+    criar_diretorio(caminho_pasta_mae);
+
+    strcpy(retorno, caminho_pasta_mae);
 }
 
 // ### Configurando pasta Backups ###
