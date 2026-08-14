@@ -9,59 +9,52 @@
 
 int main()
 {
-    char caminho[260];
-    int b = 0; // Valor booleano
+    char origem[260];
+    char destino[260];
+    int b = 0, opcao = 0; // Valor booleano
 
     // Define a codificação
     setlocale(LC_ALL, ".UTF-8");
     limpar();
 
-    // Lendo caminhos
-    printf("Digite o caminho de um arquivo ('0' para sair): ");
-    fgets(caminho, sizeof(caminho), stdin);
-        // Limpando '\n'
-    caminho[strcspn(caminho, "\n")] = '\0';
-    
-    while (strcmp(caminho, "0") != 0) // Enquanto for diferente de "0"
-    {
-        // Formatando
-        formatarCaminho(caminho);
-        verificarTipoCaminho(caminho);
-        conseguir_origem(caminho);
-        //conseguir_caminhos(caminho);
+    // Verificando a existência de uma pasta para conter os backups
 
-        if (verificar_caminho_ja_adicionado(caminho) == 1)
-        {
-            printf("Caminho já adicionado.\n");
-        }
-        else // Adicionar, caso não o tenha feito ainda
-        {
-            printf("Caminho ainda não adicionado.\n");
+    if(existe_pasta_backups() == 0){ // Existe
+        printf("Pasta Backup já existe e foi encontrada.\n");
 
-            b = adicionarParaBackup(caminho); // Adicionando
-
-            // Verificando status da operação de adição
-            if (b == 0)
-            {
-                printf("Falha ao adicionar à lista de backup.\n");
-            }
-            else
-            {
-                printf("Adição bem sucedida.\n");
-            }
-        }
+    } else {
+        // Verificar existência de um caminho
+        if(!existe_caminho_backups()) {
+            criar_caminho_pasta_backups();
+        } 
         
-        printf("PRESSIONE QUALQUER TECLA PARA CONTINUAR. . .\n");
-        getch();
-
-        // Releitura do flag
-        limpar();
-        printf("Digite o caminho de um arquivo ('0' para sair): ");
-        fgets(caminho, sizeof(caminho), stdin);
-            // Limpando '\n'
-        caminho[strcspn(caminho, "\n")] = '\0';
+        criar_pasta_backups();
     }
-    
+
+    // Lendo opção do procedimento a ser realizado
+
+
+    // Lendo caminho da origem
+    printf("Digite o caminho da pasta de origem ('0' para sair): ");
+    fgets(origem, sizeof(origem), stdin);
+    origem[strcspn(origem, "\n")] = '\0'; // Limpando '\n'
+
+    // Lendo caminho do destino
+    printf("Digite o caminho da pasta de destino: ");
+    fgets(destino, sizeof(destino), stdin);
+    destino[strcspn(destino, "\n")] = '\0'; // Limpando '\n'
+     
+    // Formatando caminhos
+    formatarCaminho(origem);
+    formatarCaminho(destino);
+
+    // Copiar diretório(s)
+    if(copiar_diretorio(origem, destino) == 0){
+        printf("Cópia bem sucedida.\n");
+    }
+    else{
+        printf("Houve uma falha ao copiar.");
+    }
 
     return 0;
 }

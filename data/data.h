@@ -2,9 +2,11 @@
 #include <stdio.h>
 #include <windows.h>
 #include <errno.h>
+#include <shlwapi.h>
 
 #define CAMINHO_MAXIMO 260
 
+// ### FORMATAÇÃO ###
 void eliminarAspas(char* caminho)
 {
     char novoCaminho[CAMINHO_MAXIMO];
@@ -16,7 +18,7 @@ void eliminarAspas(char* caminho)
     ptrAspas = strtok(caminho, ptrA);
     while (ptrAspas != NULL)
     {
-        strcat(novoCaminho, ptrAspas); // Adiciona a parte, sem aspas, à string de saida
+        strcat(novoCaminho, ptrAspas); // Adiciona a parte sem aspas à string de saida
 
         ptrAspas = strtok(NULL, ptrA); // Altera o token
     }
@@ -74,10 +76,11 @@ void addCharCuringa(char* caminho)
 void formatarCaminho(char* caminho)
 {
     /*Formata o caminho especificado (colocando contra-barras duplas, por exemplo)*/
-    eliminarAspas(caminho);
+    //eliminarAspas(caminho);
     duplicarContraBarras(caminho);
 }   
 
+// ### MANIPULAÇÃO DE ARQUIVOS ###
 int adicionarParaBackup(char* caminho)
 {
     int b = 0;
@@ -89,7 +92,7 @@ int adicionarParaBackup(char* caminho)
 
     // Inicializar o ponteiro de arquivo
     FILE *fptr;
-    fptr = fopen("ListaParaBackup.txt", "a");
+    fptr = fopen("data\\ListaParaBackup.txt", "a");
 
     // Adiciona o arquivo à lista
     fprintf(fptr, caminho);
@@ -163,19 +166,31 @@ void conseguir_origem(char* caminho)
     printf("%s", caminhoBuff);
 }
 
-int conseguir_caminhos(char* caminho) // Consegue todos os arquivos a partir de um dado caminho de diretório
+int criar_diretorio(char* caminho)
+{
+    if(!CreateDirectory(caminho, NULL))
+    {
+        return 1; // Houve erro
+    }
+
+    printf("Pasta criada com sucesso em %s\n", caminho);
+    return 0;
+}
+
+int copiar_diretorio(char* origem, char*destino) // Consegue todos os arquivos a partir de um dado caminho de diretório
 {
     WIN32_FIND_DATA findData;
     HANDLE hFind;
 
-    char caminhoBuffer[CAMINHO_MAXIMO];
+    char caminhoOrigem[CAMINHO_MAXIMO];
+    char caminhoDestino[CAMINHO_MAXIMO];
 
     // Formatando caminho de ficheiro para conseguir todos os arquivos presentes
-    int j = snprintf(caminhoBuffer, CAMINHO_MAXIMO, "%s\\\\*", caminho); // Adicionando "\\*"
-    retirarEndlinde(caminhoBuffer);
+    int j = snprintf(caminhoOrigem, CAMINHO_MAXIMO, "%s\\\\*", origem); // Adicionando "\\*"
+    retirarEndlinde(caminhoOrigem);
 
     // Consegue o primeiro arquivo no dado caminho
-    hFind = FindFirstFile(caminhoBuffer, &findData);
+    hFind = FindFirstFile(caminhoOrigem, &findData);
 
     do
     {
@@ -192,16 +207,17 @@ int conseguir_caminhos(char* caminho) // Consegue todos os arquivos a partir de 
             continue;
         }
 
-        char caminho_completo[CAMINHO_MAXIMO];
-        snprintf(caminho_completo, CAMINHO_MAXIMO, "%s\\\\%s", caminho, findData.cFileName);
+        snprintf(caminhoOrigem, CAMINHO_MAXIMO, "%s\\\\%s", origem, findData.cFileName);
+        snprintf(caminhoDestino, CAMINHO_MAXIMO, "%s\\\\%s", destino, findData.cFileName);
         
         if (findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) // Se for diretório
         {
-            conseguir_caminhos(caminho_completo);
+            criar_diretorio(caminhoDestino);
+            copiar_diretorio(caminhoOrigem, caminhoDestino); // Se for um pasta, chama novamente a função
         }
         else
         {
-            printf("\nArquivo: %s\n", caminho_completo);
+            CopyFile(caminhoOrigem, caminhoDestino, FALSE); // Se for arquivo, copia para o destino
         }
 
     }  while (FindNextFile(hFind, &findData));
@@ -210,4 +226,136 @@ int conseguir_caminhos(char* caminho) // Consegue todos os arquivos a partir de 
     FindClose(hFind);
     
     return 0; // Pardão de retorno bem-sucedido
+}
+
+// ### Configurando pasta Backups ###
+int existe_caminho_backups()
+{
+    char linha[CAMINHO_MAXIMO];
+    FILE* fptr;
+
+    fptr = fopen("data\\Caminho_Backups.txt", "r");
+
+    if(fgets(linha, CAMINHO_MAXIMO, fptr) == NULL) {
+        return 0;
+
+    } else {
+        return 1;
+        
+    }
+
+    fclose(fptr);
+}
+
+void criar_caminho_pasta_backups()
+{
+    /* Cria ou atualiza o arquivo que conterá o caminho para a pasta Backups. */
+
+    char caminho_backups[CAMINHO_MAXIMO];
+    FILE* fptr;
+
+    // Consegue o caminho digitado
+    printf("Insira o caminho no qual a pasta Backups será criada: ");
+
+    fgets(caminho_backups, CAMINHO_MAXIMO, stdin);
+    caminho_backups[strcspn(caminho_backups, "\n")] = '\0';
+
+    formatarCaminho(caminho_backups);
+
+    sprintf(caminho_backups, "%s\\\\%s", caminho_backups, "Backups");
+
+    // Criando ou atualizando o arquivo
+    fptr = fopen("data\\Caminho_Backups.txt", "w");
+
+    fprintf(fptr, "%s", caminho_backups); // Salvo a novo caminho
+
+    fclose(fptr);
+}
+
+int existe_pasta_backups()
+{
+    /* Função que verifica a existência da pasta Backups, que conterá os backups 
+       Retorna zero caso a pasta exista e o caminho para está seja válido */
+
+    char nome_pasta[20];
+    char* nameptr;
+
+    printf("Verificando existência da pasta Backups...\n");
+
+    FILE* fptr;
+    fptr = fopen("data\\Caminho_Backups.txt", "r");
+
+    char cam_backups[CAMINHO_MAXIMO]; // Caminho para a pasta backups
+
+    if(fptr == NULL){
+        printf("Falha ao encontrar a pasta Backups. Caminho não existe ou foi movido.\n");
+        return 1;
+
+    } else { // Algum caminho encontrado
+        if(fgets(cam_backups, CAMINHO_MAXIMO, fptr) != NULL) { // Pega o caminho se houver algo na linha
+            cam_backups[strcspn(cam_backups, "\n")] = '\0';
+    
+            // Conseguindo o nome da pasta
+            nameptr = strrchr(cam_backups, '\\');
+            sprintf(nome_pasta, "%s", nameptr + 1);
+            
+            // Verifica se o nome é Backups
+            if(strcmp(nome_pasta, "Backups") == 0){ // Caso seja Backups
+    
+                if(PathFileExists(cam_backups)) { // Verifica se o caminho é válido
+                    printf("Caminho válido encontrado.\n");
+                    return 0;
+                
+                } else {
+                    printf("Caminho inválido encontrado.\n");
+                    return 1;
+                }
+        
+    
+            } else { // Caso o nome não seja backups
+                printf("O caminho não faz referência à pasta Backups.\n");
+                return 1;
+            }
+
+        } else { // Nesse caso, não há nada na linha
+            printf("Não há caminho para Backups registrado.\n");
+            return 1;
+        }
+    }
+
+    fclose(fptr); // Fechando o arquivo
+}
+
+int criar_pasta_backups()
+{
+    /* Cria a pasta Backups */
+
+    char caminho[CAMINHO_MAXIMO];
+    char nome_pasta[] = "Backups";
+
+    FILE* fptr;
+    fptr = fopen("data\\Caminho_Backups.txt", "r");
+
+    // Consegue o caminho onde será criada
+    fgets(caminho, CAMINHO_MAXIMO, fptr); // Já vem formatado
+    caminho[strcspn(caminho, "\n")] = '\0';
+    
+    //sprintf(caminho, "%s\\\\%s", caminho, nome_pasta); // Adiciona o nome da pasta backups ao caminho
+
+    fclose(fptr);
+
+    if(criar_diretorio(caminho) == 0) { // Sucesso
+        return 0;
+        
+    } else { // Fracasso
+        DWORD erro = GetLastError();
+        printf("Houve um erro ao criar a pasta. Erro: %lu\n", erro);
+
+        // ### possíveis erros ###
+        if(erro == 183){
+            printf("A pasta já existe.\n");
+        }
+
+        return 1;
+    }
 }
