@@ -9,9 +9,11 @@
 
 int main()
 {
+    char op_buff[3];
     char origem[260];
     char destino[260];
-    int b = 0, opcao = 0; // Valor booleano
+    int b = 0, opcao = 999; // Valor booleano
+    char c = '\0';
 
     // Define a codificação
     setlocale(LC_ALL, ".UTF-8");
@@ -22,22 +24,28 @@ int main()
     pular(); // Pulando a linha
     pular();
 
-    if(existe_pasta_backups() == 0){ // Existe
-        printf("Pasta Backup já existe e foi encontrada.\n");
-
-    } else {
-        // Verificar existência de um caminho
-        if(!existe_caminho_backups()) {
+    switch(existe_pasta_backups()) {
+        case 0: // Existe e caminho e foi encontrada (good ending)
+            printf("Pasta Backup já existe e foi encontrada.\n");
+            break;
+        
+        case 1: // Caminho não existe ou a pasta não existe
+            if (!existe_caminho_backups()) {
             criar_caminho_pasta_backups();
-        }   
-        criar_pasta_backups();
+            } 
+            criar_pasta_backups();
+            break;
+
+        case 2: // Caminho existe mas é inválido
+            criar_caminho_pasta_backups(); // Atualiza o caminho
+            criar_pasta_backups();
+            break;
     }
 
     printf("Verificação concluída. Digite qualquer coisa para continuar.\n");
-    getchar();
+    getchar(); // Pausa o programa
 
     // Lendo e verificando opção de procedimento a ser realizado
-
     do {
         limpar();
 
@@ -45,34 +53,84 @@ int main()
         pular();
         pular();
 
-        printf("[1] Iniciar Backup com as configurações atuais\n[0] Alterar configurações\n");
+        printf("[1] Iniciar Backup com as configurações atuais\n[2] Alterar configurações\n[0] Voltar/Sair\n");
         linha('-', 15);
         pular();
         printf("Sua escolha: ");
 
-        scanf("%d", &opcao); // Lendo a opção
-        while(getchar() != '\n');
+        fgets(op_buff, 3, stdin);
+        sscanf(op_buff,"%d", &opcao);
 
-        switch(opcao){
+        switch(opcao) { // Conseguindo opção do procedimento
             case 1:
-                printf("Iniciando Backup...\n");
+                if(existe_arquivo_para_copiar()) {
+                    printf("Iniciando Backup...\n");
+                }
+                getchar();
+                opcao = 999;
                 break;
             
-            case 0:
-                printf("Alterando arquivos...\n");
+            case 2:
+                do {
+                    limpar();
+
+                    fazer_titulo("ALTERAR ARQUIVOS", 5);
+                    pular();
+                    pular();
+
+                    printf("[1] Adicionar arquivo/diretório\n[2] Remover arquivo/diretório\n[0] Voltar\n");
+                    linha('-', 15);
+                    pular();
+                    printf("Sua escolha: ");
+
+                    fgets(op_buff, 3, stdin);
+                    sscanf(op_buff, "%d", &opcao);
+
+                    switch(opcao) { // Conseguindo opção do procedimento
+                        case 1:
+                            printf("Adicionando arquivos...\n");
+                            adicionar_arquivos(); // Procedimento Add. Arquivos
+                            opcao = 999;
+                            break;
+                        
+                        case 2:
+                            printf("Removendo arquivos...\n");  
+                            opcao = 999;                          
+                            break;
+
+                        case 0:
+                            printf("Saindo...\n");
+                            break;
+                
+                        default:
+                            printf("Opção inválida. Digite qualquer coisa para tentar novamente.\n");
+                            getchar();
+                    }
+                } while(opcao != 1 && opcao != 2 && opcao != 0);
+                opcao = 999; // Passará para o menu anterior
                 break;
     
+            case 0:
+                printf("Saindo...\n");
+                break;
+
             default:
                 printf("Opção inválida. Digite qualquer coisa para tentar novamente.\n");
                 getchar();
-
         }
-    } while(opcao != 1 && opcao != 0); 
+    } while(opcao != 1 && opcao != 2 && opcao != 0);
+
+    // Fim do programa
+    limpar();
+    printf("Encerrando...");
+
         // Iniciar Backup com as configurações já salvas
         // Alterar arquivos
 
     // Algorítimo de cópia
         // Lendo caminho da origem
+
+    /*
     limpar();
     printf("Digite o caminho da pasta de origem ('0' para sair): ");
     fgets(origem, sizeof(origem), stdin);
@@ -95,6 +153,7 @@ int main()
     else{
         printf("Houve uma falha ao copiar.");
     }
+    */
 
     return 0;
 }

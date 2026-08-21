@@ -5,6 +5,8 @@
 #include <shlwapi.h>
 
 #define CAMINHO_MAXIMO 260
+#define CAMINHO_BACKUPS_TXT "data\\Caminho_Backups.txt"
+#define CAMINHO_LISTA_TXT "data\\Lista_Backups.txt"
 
 // ### FORMATAÇÃO ###
 void eliminarAspas(char* caminho)
@@ -18,7 +20,7 @@ void eliminarAspas(char* caminho)
     
     // Verificando a presença de aspas
     if(strcspn(caminho, ptrA) == strlen(caminho)) { // Não há aspas
-        printf("Caminho não está entre aspas.\n");
+        //printf("Caminho não está entre aspas.\n");
 
     } else { // Existem aspas
         ptrAspas = strtok(caminho, ptrA);
@@ -36,7 +38,7 @@ void eliminarAspas(char* caminho)
         ptrAspas = NULL;
         ptrA = NULL;
 
-        printf("Aspas removidas com sucesso.\n");
+        //printf("Aspas removidas com sucesso.\n");
     }
 }
 
@@ -265,7 +267,7 @@ int existe_caminho_backups()
     char linha[CAMINHO_MAXIMO];
     FILE* fptr;
 
-    fptr = fopen("data\\Caminho_Backups.txt", "r");
+    fptr = fopen(CAMINHO_BACKUPS_TXT, "r");
 
     if(fgets(linha, CAMINHO_MAXIMO, fptr) == NULL) {
         return 0;
@@ -303,6 +305,31 @@ void criar_caminho_pasta_backups()
     fclose(fptr);
 }
 
+int conseguir_caminho_Backups(char* retorno)
+{
+    /* Função que consegue o caminho salvo para a pasta Backups.
+       O caminho será copiado para o buffer "retorno". */
+
+    char c_Backups[CAMINHO_MAXIMO] = {'\0'};
+    FILE* fptr;
+
+    fptr = fopen(CAMINHO_BACKUPS_TXT, "r");
+
+    if(fptr == NULL) { // Houve erro
+        printf("Erro ao encontrar o arquivo: %s\n", CAMINHO_BACKUPS_TXT);
+        return 1;
+
+    } else { // Conseguindo caminho
+        fgets(c_Backups, CAMINHO_MAXIMO, fptr);
+        c_Backups[strspn(c_Backups, "\n")] = '\0';
+
+        strcpy(retorno, c_Backups);
+        return 0; // Sucesso
+    }
+
+    fclose(fptr);
+}
+
 int existe_pasta_backups()
 {
     /* Função que verifica a existência da pasta Backups, que conterá os backups 
@@ -314,7 +341,7 @@ int existe_pasta_backups()
     printf("Verificando existência da pasta Backups...\n");
 
     FILE* fptr;
-    fptr = fopen("data\\Caminho_Backups.txt", "r");
+    fptr = fopen(CAMINHO_BACKUPS_TXT, "r");
 
     char cam_backups[CAMINHO_MAXIMO]; // Caminho para a pasta backups
 
@@ -339,13 +366,13 @@ int existe_pasta_backups()
                 
                 } else {
                     printf("Caminho inválido encontrado.\n");
-                    return 1;
+                    return 2;
                 }
         
     
             } else { // Caso o nome não seja backups
                 printf("O caminho não faz referência à pasta Backups.\n");
-                return 1;
+                return 2;
             }
 
         } else { // Nesse caso, não há nada na linha
@@ -388,5 +415,94 @@ int criar_pasta_backups()
         }
 
         return 1;
+    }
+}
+
+// ### Lidando com a lista de pastas a serem copiadas ###
+int existe_lista_backups() 
+{
+    /* Função que verifica a existência do arquivo Lista_backups*/
+    FILE* fptr;
+
+    fptr = fopen("data\\Lista_backup.txt", "r");
+
+    if(fptr == NULL) {
+        printf("Lista_backups.txt não existe.\n");
+        return 0;
+
+    } else {
+        printf("Lista_backups.txt existe.\n");
+        return 1;
+    }
+    fclose(fptr);
+}
+
+int existe_arquivo_para_copiar()
+{
+    /* Função que verifica se existe algum caminho para algum arquivo salvo.
+       Os arquivos são especificados no documento "Lista_backup.txt" */
+
+    char caminho[CAMINHO_MAXIMO];
+    FILE* fptr;
+
+    if(existe_lista_backups()) {
+        fptr = fopen("data\\Lista_backup.txt", "r");
+
+        if(fgets(caminho, CAMINHO_MAXIMO, fptr) != NULL) {
+            printf("Existe caminho na Lista_Backups.\n");
+            return 1;
+
+        } else {
+            printf("Não existem caminhos na Lista_Backups.\n");
+            return 0;
+
+        }
+    } else {
+        return 0;
+    }
+   fclose(fptr);
+}
+
+int adicionar_lista_backup(char* arquivo)
+{
+    /* Função que adiciona o caminho de uma pasta ou arquivo à lista
+       para fazer backup. */
+
+    FILE* fptr;
+
+    fptr = fopen(CAMINHO_LISTA_TXT, "a");
+
+    if(fptr == NULL) { // Não abriu corretamente
+        printf("Houve um erro ao adicionar o arquivo à Lista_Backups.\nNão foi possível abrir o arquivo em: %s.\n", CAMINHO_LISTA_TXT);
+        fclose(fptr);
+        return 1;
+
+    } else {
+        fprintf(fptr, "%s\n", arquivo); // Adiciona ao arquivo
+        printf("Arquivo/caminho adicionado com sucesso.\n");
+        fclose(fptr);
+        return 0;
+    }
+}
+
+void adicionar_arquivos() {
+    /* Sequência de procedimentos para adicionar um arquivo à lista para backup */
+
+    char arquivo[CAMINHO_MAXIMO] = {'\0'};
+
+    // Lendo flag
+    printf("Digite o caminho do arquivo ('0' para sair): ");
+    fgets(arquivo, CAMINHO_MAXIMO, stdin);
+    arquivo[strcspn(arquivo, "\n")] = '\0';
+    
+    while(strcmp(arquivo, "0") != 0) {
+        formatarCaminho(arquivo);
+    
+        adicionar_lista_backup(arquivo);
+
+        // Releitura do flag
+        printf("Digite o caminho do arquivo('0' para sair): "); 
+        fgets(arquivo, CAMINHO_MAXIMO, stdin);
+        arquivo[strcspn(arquivo, "\n")] = '\0';
     }
 }

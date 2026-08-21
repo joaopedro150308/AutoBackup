@@ -1,4 +1,0 @@
-C:\\Users\\joaop\\OneDrive\\Desktop\\Arquivos testes\\ArquivosParaTestes\\*
-C:\\Users\\joaop\\OneDrive\\Desktop\\Arquivos testes\\*
-C:\\Users\\joaop\\OneDrive\\Desktop\\Arquivos testes
-C:\\Users\\joaop\\OneDrive\\Desktop\\Arquivos testes\\ArquivosParaTestes

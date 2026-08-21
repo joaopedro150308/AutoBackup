@@ -1,11 +1,11 @@
 #include <stdio.h>
 
-void limpar() /* Limpa o terminal */
+void limpar(void) /* Limpa o terminal */
 {
     printf("\033c");
 }
 
-void pular()
+void pular(void)
 {
     /* Pular linha */
     printf("\n");
