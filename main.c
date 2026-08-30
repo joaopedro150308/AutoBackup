@@ -94,7 +94,9 @@ int main()
                             break;
                         
                         case 2:
-                            printf("Removendo arquivos...\n");  
+                            limpar();
+                            printf("   ARQUIVOS SALVOS   ");
+                            remover_arquivos();
                             opcao = 999;                          
                             break;
 

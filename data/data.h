@@ -3,6 +3,7 @@
 #include <windows.h>
 #include <errno.h>
 #include <shlwapi.h>
+#include <conio.h>
 
 #define CAMINHO_MAXIMO 260
 #define CAMINHO_BACKUPS_TXT "data\\Caminho_Backups.txt"
@@ -190,7 +191,7 @@ int criar_diretorio(char* caminho)
     return 0;
 }
 
-int copiar_diretorio(char* origem, char*destino) // Consegue todos os arquivos a partir de um dado caminho de diretório
+int copiar_diretorio(char* origem, char* destino) // Consegue todos os arquivos a partir de um dado caminho de diretório
 {
     WIN32_FIND_DATA findData;
     HANDLE hFind;
@@ -485,6 +486,98 @@ int adicionar_lista_backup(char* arquivo)
     }
 }
 
+char **conseguir_arquivos_lista_backups(int* quant_caminhos, int* status) {
+    /* Uma função que pega os arquivos presentes na Lista_Backups.txt
+       e passa-os para uma matriz, então, retorna essa matriz.
+       A quantidade de caminhos é retornada no argumento "quant_caminhos".
+       O código de status de execução é retornado no argumento "status" (0=sucesso,1=erro). */
+
+    int cont; // Conta a quantidade de arquivos
+    int linhas = 5, colunas = CAMINHO_MAXIMO, linhasAntigas = 0;
+
+    char **novaMatriz = NULL;
+    char **arquivos = NULL;
+
+    FILE *fptr = NULL;
+
+    fptr = fopen(CAMINHO_LISTA_TXT, "r");
+    
+    if(fptr == NULL) {
+        printf("Houve um erro ao ler Lista_Backups.txt.\n");
+        *status = 1;
+        return NULL;
+
+    } else {
+        // Alocando memória para "arquivos"
+        arquivos = (char**) malloc(linhas * sizeof(char*));
+            // Alocando para cada linha
+        for(int i = 0; i < linhas; i++) {
+            arquivos[i] = (char*) malloc(colunas * sizeof(char));
+        }
+
+        // Lendo as linhas do arquivo e passando para o array
+        cont = 0;
+        while(fgets(arquivos[cont], CAMINHO_MAXIMO, fptr)) {
+            cont++;
+
+            // Verificando a necessidade de realocar memória para a matriz (linhas insuficientes)
+            if(cont == linhas) { // É necessário realocar memória
+                printf("Realocando memória para 'arquivos'...\n");
+                linhasAntigas = linhas;
+                linhas += 5; // Aumentando as linhas novas
+                novaMatriz = (char**) realloc(arquivos, linhas * sizeof(char*));
+
+                if(novaMatriz == NULL) { // Erro ao realocar
+                    printf("ERRO: Não foi possível realocar a matriz 'arquivos'.\n");
+                    
+                    // Liberando memória alocada
+                    for(int i = 0; i < linhas; i++) {
+                        free(arquivos[i]);
+                    }
+                    free(arquivos);
+                    arquivos = NULL;
+
+                    *status = 1;
+                    return NULL;
+
+                } else { // Sucesso ao realocar
+                    arquivos = novaMatriz;
+                        // Allocando/Inicializando cada nova linha
+                    for(int i = linhasAntigas; i < linhas; i++) {
+                        arquivos[i] = (char*) malloc(CAMINHO_MAXIMO * sizeof(char));
+                    }
+                }
+
+                printf("Sucesso ao realocar memória.\n");
+            }
+        }
+    } // Fim leitura dos arquivos
+
+    // Retornos
+    *quant_caminhos = cont;
+    *status = 0;
+
+    // Liberando ponteiros
+    fclose(fptr);
+    fptr = NULL;
+
+    return arquivos;
+}
+
+void exibir_arquivos_salvos(char** caminhos_lista, int quantidade_caminhos) {
+    /* Função que exibe ao usuário os arquivos presentes em Lista_Backups.
+       Retorna a quantidade de arquivos salvos. */
+
+    int cont = 0;
+
+    printf("\n------------------------\n");
+    printf("[ENDEREÇO] CAMINHO");
+    printf("\n------------------------\n");
+    for(int i = 0; i < quantidade_caminhos; i++) {
+        printf("[%d] %s", i, caminhos_lista[i]);
+    }
+}
+
 void adicionar_arquivos() {
     /* Sequência de procedimentos para adicionar um arquivo à lista para backup */
 
@@ -505,4 +598,45 @@ void adicionar_arquivos() {
         fgets(arquivo, CAMINHO_MAXIMO, stdin);
         arquivo[strcspn(arquivo, "\n")] = '\0';
     }
+}
+
+void remover_arquivos() {
+    /* Procedimento que removerá arquivos da lista backups */
+    int endereco;
+    char scan_buff[5];
+    char** caminhos_lista = NULL;
+    
+    
+    int quant_caminhos;
+    int status; // Conterá um código de status de execução
+
+    caminhos_lista = conseguir_arquivos_lista_backups(&quant_caminhos, &status); // Consegue a matriz com os caminhos
+
+    // Escrevendo matriz com os caminhos
+    if(quant_caminhos>0) {
+        exibir_arquivos_salvos(caminhos_lista, quant_caminhos);
+        printf("------------------------\n");
+    
+        // Lendo e validando endereo
+        printf("Digite o endereço do caminho a ser excluído (-1 para sair): ");
+        fgets(scan_buff, 5, stdin);
+        sscanf(scan_buff, "%d", &endereco);
+            // Validando
+        while(endereco < -1 || endereco > quant_caminhos - 1) {
+            printf("Endereço inválido. Digite qualquer coisa para tentar novamente.\n");
+            getchar();
+            printf("\033c"); // Limpar tela
+            // Relendo flag
+            printf("Digite o endereço do caminho a ser excluído (-1 para sair): ");
+            fgets(scan_buff, 5, stdin);
+            sscanf(scan_buff, "%d", endereco);
+        }
+
+        // Removendo da lista
+
+    }
+
+
+
+    getchar();
 }

@@ -21,3 +21,9 @@
     - O usuário deve ser capaz de adicionar e remover caminhos pelo próprio programa. (Feito)
 
     - Falta remover.
+
+    - Depois de adicionar a capacidade de remover, criar o procedimento de backup.
+
+    - TESTAR CONSEGUIR ARQUIVOS!!!!! (testado e funcionando)
+
+    - 
