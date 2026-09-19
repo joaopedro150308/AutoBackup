@@ -26,4 +26,16 @@
 
     - TESTAR CONSEGUIR ARQUIVOS!!!!! (testado e funcionando)
 
-    - 
+#### REFATORAÇÃO ####
+
+- (*) Modificar o sistema de adicionar arquivos para backups. Deve ser um pequeno CRUD.
+    - Adicionar arquivos
+    - Remover arquivos
+    - Mostrar arquivos
+
+- Verificar e refatorar, se necessário, a arquitetura de cada um dos sistemas:
+    - Arquivos (*)
+    - Caminhos
+    - Backups
+    - Uteis
+    - Algoritimo de "main"

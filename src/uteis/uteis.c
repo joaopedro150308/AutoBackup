@@ -1,14 +1,9 @@
 #include <stdio.h>
+#include <string.h>
 
 void limpar(void) /* Limpa o terminal */
 {
     printf("\033c");
-}
-
-void pular(void)
-{
-    /* Pular linha */
-    printf("\n");
 }
 
 void linha(char simbolo, int quantidade)
@@ -45,5 +40,4 @@ void fazer_titulo(char* titulo, int espacos)
     escrever_centralizado(titulo, espacos);
     pular();
     linha('=', linhas_tamanho);
-
 }

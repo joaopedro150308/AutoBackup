@@ -132,30 +132,6 @@ int main()
     // Algorítimo de cópia
         // Lendo caminho da origem
 
-    /*
-    limpar();
-    printf("Digite o caminho da pasta de origem ('0' para sair): ");
-    fgets(origem, sizeof(origem), stdin);
-    origem[strcspn(origem, "\n")] = '\0'; // Limpando '\n'
-
-    // Lendo caminho do destino
-    printf("Digite o caminho da pasta de destino: ");
-    fgets(destino, sizeof(destino), stdin);
-    destino[strcspn(destino, "\n")] = '\0'; // Limpando '\n'
-     
-    // Formatando caminhos
-    formatarCaminho(origem);
-    formatarCaminho(destino);
-
-    // Copiar diretório(s)
-    criar_pasta_mae(origem, destino, destino);
-    if(copiar_diretorio(origem, destino) == 0){
-        printf("Cópia bem sucedida.\n");
-    }
-    else{
-        printf("Houve uma falha ao copiar.");
-    }
-    */
 
     return 0;
 }
