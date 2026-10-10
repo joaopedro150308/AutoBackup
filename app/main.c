@@ -4,16 +4,21 @@
 #include <string.h>
 #include <conio.h>
 
-#include "./data//data.h"
-#include "./uteis//uteis.h"
+#include "backups/backups.h"
+#include "arquivos/arquivos.h"
+#include "uteis/uteis.h"
+#include "caminhos/caminhos.h"
 
 int main()
 {
     char op_buff[3];
+    /*
     char origem[260];
     char destino[260];
-    int b = 0, opcao = 999; // Valor booleano
-    char c = '\0';
+    */
+
+    // Valor booleano
+    int opcao = 999; 
 
     // Define a codificação
     setlocale(LC_ALL, ".UTF-8");
@@ -21,22 +26,26 @@ int main()
 
     // Verificando a existência de uma pasta para conter os backups
     fazer_titulo("VERIFICANDO PASTA BACKUPS", 5);
-    pular(); // Pulando a linha
-    pular();
+    printf("\n\n"); // Pulando linhas
 
+    // Verifica se existe um caminho para a pasta backups
+    if(existe_caminho_backups())
+    {
+        printf("Existe caminho.\n");
+    }
     switch(existe_pasta_backups()) {
-        case 0: // Existe e caminho e foi encontrada (good ending)
+        case 1: // Existe e caminho e foi encontrada (good ending)
             printf("Pasta Backup já existe e foi encontrada.\n");
             break;
         
-        case 1: // Caminho não existe ou a pasta não existe
+        case 2: // Caminho não existe ou a pasta não existe
             if (!existe_caminho_backups()) {
             criar_caminho_pasta_backups();
             } 
             criar_pasta_backups();
             break;
 
-        case 2: // Caminho existe mas é inválido
+        case 0: // Erro ao conseguir caminho. É necessário um novo.
             criar_caminho_pasta_backups(); // Atualiza o caminho
             criar_pasta_backups();
             break;
@@ -50,12 +59,11 @@ int main()
         limpar();
 
         fazer_titulo("SELECIONE O PROCEDIMENTO", 5);
-        pular();
-        pular();
+        printf("\n\n");
 
         printf("[1] Iniciar Backup com as configurações atuais\n[2] Alterar configurações\n[0] Voltar/Sair\n");
         linha('-', 15);
-        pular();
+        printf("\n");
         printf("Sua escolha: ");
 
         fgets(op_buff, 3, stdin);
@@ -75,12 +83,12 @@ int main()
                     limpar();
 
                     fazer_titulo("ALTERAR ARQUIVOS", 5);
-                    pular();
-                    pular();
+                    printf("\n");
+                    printf("\n");
 
                     printf("[1] Adicionar arquivo/diretório\n[2] Remover arquivo/diretório\n[0] Voltar\n");
                     linha('-', 15);
-                    pular();
+                    printf("\n");
                     printf("Sua escolha: ");
 
                     fgets(op_buff, 3, stdin);

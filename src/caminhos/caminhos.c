@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "configs/configs.h"
-#include "src/caminhos/caminhos.h"
+#include "../configs/configs.h"
+#include "caminhos/caminhos.h"
 
 // ### FORMATAÇÃO ###
 

@@ -5,10 +5,7 @@
 #include <string.h>
 
 /* Limpa o terminal */
-void limpar(void) 
-{
-    printf("\033c");
-}
+void limpar(void);
 
 /* Faz uma linha */
 void linha(char simbolo, int quantidade);

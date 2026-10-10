@@ -1,8 +1,12 @@
 #include <stdio.h>
 #include <error.h>
+#include <windows.h>
 #include <shlwapi.h>
 
-#include "configs/configs.h"
+#include "../configs/configs.h"
+#include "caminhos/caminhos.h"
+#include "arquivos/arquivos.h"
+#include "backups/backups.h"
 
 // ### Configurando pasta Backups ###
 
@@ -14,19 +18,47 @@ int existe_caminho_backups()
     fptr = fopen(CAMINHO_BACKUPS_TXT, "r");
 
     if(fgets(linha, CAMINHO_MAXIMO, fptr) == NULL) {
+        printf("Não foi possível abrir o arquivo em %s", CAMINHO_BACKUPS_TXT);
+        fclose(fptr);
         return 0;
 
-    } else {
-        return 1;
-        
-    }
+    } else { // Arquivo encontrado
+        char buff[CAMINHO_MAXIMO];
 
-    fclose(fptr);
+        // Verificando se há conteúdo
+        if(fgets(buff, CAMINHO_MAXIMO, fptr) == NULL)
+        {
+            printf("Não há nada registrado no arquivo em %s", CAMINHO_BACKUPS_TXT);
+            fclose(fptr);
+            return 0;
+        }
+
+        // Verificando se o caminho encontrado faz referêcia à Backups
+        buff[strcspn(buff, "\n")] = '\0';
+
+        char *contra_barraPtr = NULL;
+        char nome[50];
+
+        contra_barraPtr = strrchr(buff, '\\');
+        sprintf(nome, "%s", nome + 1);
+
+        if(strcmp(nome, "Backups") != 0)
+        {
+            printf("O caminho encontrado não faz referência à Backups.\n");
+            fclose(fptr);
+            return 0;
+        }
+        
+        // Caso o caminho esteja correto.
+        printf("O caminho encontrado faz referência a Backups.\n");
+        fclose(fptr);
+        return 1;
+    }
 }
 
+/* Cria ou atualiza o arquivo que conterá o caminho para a pasta Backups. */
 void criar_caminho_pasta_backups()
 {
-    /* Cria ou atualiza o arquivo que conterá o caminho para a pasta Backups. */
 
     char caminho_backups[CAMINHO_MAXIMO];
     FILE* fptr;
@@ -42,9 +74,9 @@ void criar_caminho_pasta_backups()
     sprintf(caminho_backups, "%s\\\\%s", caminho_backups, "Backups");
 
     // Criando ou atualizando o arquivo
-    fptr = fopen("data\\Caminho_Backups.txt", "w");
+    fptr = fopen("data\\caminho_backups.txt", "w");
 
-    fprintf(fptr, "%s", caminho_backups); // Salvo a novo caminho
+    fprintf(fptr, "%s", caminho_backups); // Salva o novo caminho
 
     fclose(fptr);
 }
@@ -74,11 +106,14 @@ int conseguir_caminho_Backups(char* retorno)
     fclose(fptr);
 }
 
+/* 
+Função que verifica a existência da pasta Backups, que conterá os backups. Retorna um códio que representa um estado de execução ou um possível diagnóstico de erro.
+
+1 - Sucesso. Pasta encontrada.
+0 - Existe um caminho registrado, mas esse não é válido.
+*/
 int existe_pasta_backups()
 {
-    /* Função que verifica a existência da pasta Backups, que conterá os backups 
-       Retorna zero caso a pasta exista e o caminho para está seja válido */
-
     char nome_pasta[20];
     char* nameptr;
 
@@ -90,10 +125,10 @@ int existe_pasta_backups()
     char cam_backups[CAMINHO_MAXIMO]; // Caminho para a pasta backups
 
     if(fptr == NULL){
-        printf("Falha ao encontrar a pasta Backups. Caminho não existe ou foi movido.\n");
-        return 1;
+        printf("Falha ao encontrar a pasta Backups. Não foi possível encontrar o arquivo de caminho.\n");
+        return 0;
 
-    } else { // Algum caminho encontrado
+    } else { // Arquivo do caminho_backups encontrado
         if(fgets(cam_backups, CAMINHO_MAXIMO, fptr) != NULL) { // Pega o caminho se houver algo na linha
             cam_backups[strcspn(cam_backups, "\n")] = '\0';
     
@@ -104,24 +139,24 @@ int existe_pasta_backups()
             // Verifica se o nome é Backups
             if(strcmp(nome_pasta, "Backups") == 0){ // Caso seja Backups
     
-                if(PathFileExists(cam_backups)) { // Verifica se o caminho é válido
+                if(PathFileExists(cam_backups)) { // Verifica se a pasta está nesse caminho
                     printf("Caminho válido encontrado.\n");
-                    return 0;
+                    return 1;
                 
-                } else {
+                } else { // Esse caminho não leva à pasta.
                     printf("Caminho inválido encontrado.\n");
-                    return 2;
+                    return 0;
                 }
         
     
-            } else { // Caso o nome não seja backups
+            } else { // Caso o nome não seja backups. É necessário um outro caminho
                 printf("O caminho não faz referência à pasta Backups.\n");
-                return 2;
+                return 0;
             }
 
-        } else { // Nesse caso, não há nada na linha
+        } else { // Nesse caso, não há nada na linha.
             printf("Não há caminho para Backups registrado.\n");
-            return 1;
+            return 0;
         }
     }
 

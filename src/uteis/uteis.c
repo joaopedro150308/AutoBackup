@@ -1,7 +1,10 @@
 #include <stdio.h>
 #include <string.h>
 
-void limpar(void) /* Limpa o terminal */
+#include "uteis/uteis.h"
+
+
+void limpar(void) 
 {
     printf("\033c");
 }
@@ -36,8 +39,8 @@ void fazer_titulo(char* titulo, int espacos)
     linhas_tamanho = strlen(titulo) + (2*espacos);
 
     linha('=', linhas_tamanho);
-    pular();
+    printf("\n");
     escrever_centralizado(titulo, espacos);
-    pular();
+    printf("\n");
     linha('=', linhas_tamanho);
 }

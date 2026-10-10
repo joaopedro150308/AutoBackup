@@ -1,8 +1,9 @@
 #include <stdio.h>
 #include <windows.h>
 
-#include "src/arquivos/arquivos.h"
-#include "configs/configs.h"
+#include "arquivos/arquivos.h"
+#include "caminhos/caminhos.h"
+#include "../configs/configs.h"
 
 int adicionarParaBackup(char* caminho)
 {
@@ -135,7 +136,7 @@ int copiar_diretorio(char* origem, char* destino)
         if (findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) // Se for diretório
         {
             criar_diretorio(caminhoDestino);
-            copiar_diretorio(caminhoOrigem, caminhoDestino); // Se for um pasta, chama novamente a função
+            copiar_diretorio(caminhoOrigem, caminhoDestino); // Se for uma pasta, chama novamente a função
         }
         else
         {
